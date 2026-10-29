@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en" class="is-intro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Dining</title>
+  <link rel="preload" as="image" href="frames/fold1/0001.webp" />
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main>
+    <!--
+      Fold 1, 0:00-0:04 (landing) plays once on load.
+      The rest of fold 1, then fold 2, is scrubbed by scroll across .scrolly.
+      Both folds draw to the same pinned canvas so the hand-off is seamless.
+    -->
+    <div class="vh-probe" id="vhProbe" aria-hidden="true"></div>
+    <section class="scrolly" id="scrolly" aria-label="Dining table animation">
+      <div class="stage">
+        <canvas id="stage" aria-hidden="true"></canvas>
+        <!-- fold 7: "Fold 7/fold 7 bg.mp4", looping behind the last copy -->
+        <video class="f7bg" id="f7bg" src="media/fold7.mp4" muted loop playsinline preload="none" aria-hidden="true"></video>
+
+        <div class="loader" id="loader" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="loader__bar" id="loaderBar"></span>
+        </div>
+
+        <!-- Copy, placed after "copy placement/" (1728 x 1117): each line is a .ln, placed in styles.css; .sc = Pinyon Script -->
+        <div class="copy copy--landing" id="copyLanding" aria-label="The best kitchens in town are expecting you.">
+          <p class="ln ln--serif ln--caps ln--la">The <span class="sc">Best Kitchens</span> in town</p>
+          <p class="ln ln--serif ln--caps ln--lc">are expecting <span class="sc sc--y"><span class="dropY">Y</span>ou.</span></p>
+        </div>
+
+        <div class="copy copy--pass" id="copyPass">
+          <h2 class="ln ln--serif ln--caps ln--pi">Introducing</h2>
+          <h2 class="ln ln--script ln--pd">Dining Pass.</h2>
+          <p class="ln ln--body ln--pb">the restaurants that book out<br /> weeks ahead with reserved<br class="d" /> seats<br class="m" /> for CRED members.</p>
+        </div>
+
+        <div class="copy copy--bill" id="copyBill">
+          <h2 class="ln ln--serif ln--caps ln--bh"><span class="sc">One</span> bill<br /> <span class="bh2">pays for</span> <br class="m" /><span class="sc bh3">Another</span></h2>
+          <p class="ln ln--body ln--bb">pay a credit card bill<br class="m" /> of ₹50,000 or above,<br /> and the dining pass<br class="m" /> is yours for 30 days.</p>
+        </div>
+
+        <div class="copy copy--g1" id="copyG1">
+          <h2 class="ln ln--serif ln--caps ln--g1">your bill</h2>
+          <h2 class="ln ln--serif ln--caps ln--g2">arrives with</h2>
+          <h2 class="ln ln--serif ln--caps ln--g3">good news</h2>
+          <p class="ln ln--body ln--gb">discounts up to 50%.<br /> tables held in your name.<br /> instant cashback.<br /> 1+1 offers.</p>
+        </div>
+
+        <div class="copy copy--f5" id="copyF5">
+          <h2 class="ln ln--mono ln--fn" aria-label="600+"><span class="num" id="f5Num">600</span><span class="plus" id="f5Plus">+</span></h2>
+          <h2 class="ln ln--mono ln--fr" aria-label="restaurants in Delhi, Mumbai and Bengaluru">restaurants in <span class="city" aria-hidden="true"><span class="city__roll"><span>Delhi</span><span>Mumbai</span><span>Bengaluru</span><span>Delhi</span></span></span></h2>
+        </div>
+
+        <!-- fold 6: "THE LAST COURSE IS ON US." is printed on the receipt itself (main.js) -->
+        <div class="copy copy--f6" id="copyF6">
+          <p class="ln ln--body ln--sb">ask for the bill,<br /> open the app, and pay.<br /> the discount is applied before<br /> you see the total.</p>
+        </div>
+
+        <div class="copy copy--f7" id="copyF7">
+          <p class="ln ln--serif ln--caps ln--tab">The table is <span class="sc sc--y"><span class="dropY">Y</span>ours.</span></p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- fold 5: the map text, a little painted like the map (light and dark brush streaks inside
+       the letters, their shape untouched), with its edges roughened by up to 1px so the ink looks soft -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <filter id="inkEdge" x="-2%" y="-10%" width="104%" height="120%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035 0.3" numOctaves="3" seed="3" result="strokes" />
+      <feColorMatrix in="strokes" type="matrix" values="1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 1" result="streaks" />
+      <feComposite in="SourceGraphic" in2="streaks" operator="arithmetic" k1="0.42" k2="0.78" k3="0" k4="0" result="painted" />
+      <feComposite in="painted" in2="SourceAlpha" operator="in" result="paint" />
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="7" result="noise" />
+      <feDisplacementMap in="paint" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+
+  <script src="main.js"></script>
+</body>
+</html>

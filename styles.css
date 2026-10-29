@@ -1,0 +1,262 @@
+:root {
+  --ink: #15171c;      /* dark carpet tone from the artwork */
+  --cream: #f3ead9;    /* tablecloth / napkin cream */
+  --scrub-length: 1000vh; /* scroll distance for everything after the landing view; main.js sets it from the timeline (SEG.end x SCROLL_VH_PER_S) */
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: ui-sans-serif, -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none; /* no pull-to-refresh or rubber-band bounce: only the folds move */
+}
+
+/* No scrolling while the landing animation plays */
+html.is-intro,
+html.is-intro body { overflow: hidden; height: 100%; }
+
+/* The page is only as tall as the scroll distance; the stage is pinned to the
+   screen and always exactly the visible height (dvh follows a phone's address
+   bar sliding in and out), so it never leaves a band below it or runs past
+   the bottom of the screen. */
+.scrolly {
+  position: relative;
+  height: calc(100vh + var(--scrub-length));
+  height: calc(100svh + var(--scrub-length));
+}
+
+.stage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* a stable screen height to measure the scroll against (never changes with the address bar) */
+.vh-probe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100vh;
+  height: 100svh;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Loading bar along the bottom edge */
+.loader {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(243, 234, 217, 0.15);
+  transition: opacity 0.6s ease;
+}
+.loader__bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--cream);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s linear;
+}
+.loader.is-done { opacity: 0; }
+
+/* Text that is drawn on the canvas, kept in the page for screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Copy over the canvas, placed after "copy placement/" (1728 x 1117 screens, sizes in
+   the reference's px): headings in Adelphe Germinal Regular at 40 on 48 (upper case),
+   the script words (.sc) in Pinyon Script with a 0.2pt outline at the size they have in the references; body in Adelphe at 28 on 33.6; the
+   map in Roboto Mono. Each line (.ln) is placed on its own: the top of its line box and
+   its left edge in the reference's px (--k = one of them), measured from the top, the
+   middle or the bottom of the screen, whichever it is nearest, so nothing runs off a
+   wider or taller screen. Opacity and the slide in and out come from main.js. */
+@font-face { font-family: 'Adelphe'; src: url('fonts/Adelphe-GerminalRegular.otf') format('opentype'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Pinyon Script'; src: url('fonts/PinyonScript-Regular.ttf') format('truetype'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Roboto Mono'; src: url('fonts/RobotoMono-Medium.ttf') format('truetype'); font-weight: 500; font-display: block; }
+@font-face { font-family: 'Roboto Mono'; src: url('fonts/RobotoMono-Bold.ttf') format('truetype'); font-weight: 700; font-display: block; }
+
+:root { --k: calc(100vw / 1728); }
+
+.copy {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  color: #fff;
+}
+.ln {
+  position: absolute;
+  margin: 0;
+  white-space: nowrap;
+  font-weight: 400;
+  line-height: 1;
+  will-change: transform, opacity;
+}
+.ln--serif { font-family: 'Adelphe', Georgia, serif; font-size: calc(40 * var(--k)); }
+.ln--caps { text-transform: uppercase; }
+.ln--body { font-family: 'Adelphe', Georgia, serif; font-size: calc(28 * var(--k)); line-height: calc(33.6 * var(--k)); }
+.ln--body br.m { display: none; } /* line breaks for phones only (br.d: desktop only) */
+.ln--mono { font-family: 'Roboto Mono', ui-monospace, monospace; text-transform: uppercase; }
+/* Pinyon Script, as a line of its own or as words within a line (where it doesn't change the line's height) */
+.ln--script, .sc { font-family: 'Pinyon Script', 'Snell Roundhand', cursive; font-weight: 400; -webkit-text-stroke: 0.2pt currentColor; } /* a hairline outline, a touch bolder */
+/* the capital Y of "You." / "Yours." sits 10pt lower, in line with the rest of the word */
+.dropY { position: relative; top: 0.161em; margin-right: 0.05em; } /* and kerned 50 away from the "o" */
+.sc--y { margin-left: -0.13em; } /* the Y's flourish reaches left: pulled in so the gap before it reads as one space */
+.sc { font-size: calc(62 * var(--k)); line-height: 0; text-transform: none; }
+
+/* landing ("1.png"): two centred lines, low on the screen */
+.ln--la, .ln--lc, .ln--tab { left: 0; width: 100%; text-align: center; line-height: calc(48 * var(--k)); }
+.ln--la { top: calc(100% - (1117 - 929.2) * var(--k)); }
+.ln--lc { top: calc(100% - (1117 - 977.2) * var(--k)); }
+html.is-intro .stage { background: #000; } /* the site starts on black */
+
+/* dining pass ("2.png"): the heading right of centre, the body low on the left */
+.ln--pi { font-size: calc(32 * var(--k)); left: calc(1080.6 * var(--k)); top: calc(50% + (511.2 - 558.5) * var(--k)); } /* between the tops of the D and the P, clear of the dots of the i's */
+.ln--pd { font-size: calc(120 * var(--k)); left: calc(951.6 * var(--k)); top: calc(50% + (520.4 - 558.5) * var(--k)); }
+.ln--pb { left: calc(181 * var(--k)); top: calc(100% - (1117 - 925.8) * var(--k)); }
+
+/* fold 3 ("3.png"): the heading at the top, the body low on the right; dark on white */
+.copy--bill { color: #111; }
+.ln--bh br.m { display: none; } /* "Another" drops to its own line on phones only */
+.ln--bh { line-height: calc(43 * var(--k)); left: calc(540 * var(--k)); top: calc(115.3 * var(--k)); } /* 5 tighter than 48; top +2.5 keeps "One BILL" where it was */
+.ln--bb { left: calc(1088 * var(--k)); top: calc(100% - (1117 - 933.4) * var(--k)); }
+
+/* gallery ("4.1.png"): the heading and, 50 below it, the body on the left, the block centred on the height of the painting frame */
+.ln--g1 { left: calc(333.6 * var(--k)); top: calc(50% + (342.55 - 558.5) * var(--k)); }
+.ln--g2 { left: calc(363.6 * var(--k)); top: calc(50% + (383.95 - 558.5) * var(--k)); }
+.ln--g3 { left: calc(333.6 * var(--k)); top: calc(50% + (425.35 - 558.5) * var(--k)); }
+.ln--gb { left: calc(333.6 * var(--k)); top: calc(50% + (503.15 - 558.5) * var(--k)); } /* 50 below the heading, left-aligned with it; the whole block centred on the frame's height */
+
+/* fold 5 ("5.png"): red, on the grid card in the bottom-left corner; the number counts up and the city changes (main.js) */
+.copy--f5 { color: #d8261a; }
+/* a fine grain (about 10%) knocks specks out of the ink, so it reads as printed on the card */
+.copy--f5 .ln {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 -0.05'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 0 0 -0.05'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)'/%3E%3C/svg%3E");
+  -webkit-mask-size: 140px 140px;
+  mask-size: 140px 140px;
+  filter: url(#inkEdge); /* a touch of oil paint inside the letters, and a grainy, soft edge, 1px */
+}
+.ln--fn { font-weight: 500; font-size: calc(100 * var(--k)); letter-spacing: -0.07em; left: calc(113 * var(--k)); top: calc(100% - (1117 - 862.6) * var(--k)); }
+.ln--fr { font-weight: 700; font-size: calc(40 * var(--k)); left: calc(118.6 * var(--k)); top: calc(100% - (1117 - 973.6) * var(--k)); }
+/* the city rolls slowly upwards in its own window: Delhi, Mumbai, Bengaluru, Delhi again, ... */
+.city { display: inline-block; height: 1.3em; overflow: hidden; vertical-align: -0.26em; margin-top: -0.15em; } /* the window sits round the line without making it taller */
+.city__roll { display: block; animation: cityRoll 4.5s infinite; }
+.city__roll > span { display: block; line-height: 1.3em; }
+@keyframes cityRoll {
+  0%, 20% { transform: translateY(0); animation-timing-function: ease-in-out; }
+  33.33%, 53.33% { transform: translateY(-1.3em); animation-timing-function: ease-in-out; }
+  66.67%, 86.67% { transform: translateY(-2.6em); animation-timing-function: ease-in-out; }
+  100% { transform: translateY(-3.9em); }
+}
+@media (prefers-reduced-motion: reduce) { .city__roll { animation: none; } }
+
+/* fold 6 ("6.2.png"): the body right of the receipt; dark on white */
+.copy--f6 { color: #0d0d0d; }
+.ln--sb { left: calc(1147 * var(--k)); top: calc(50% + (497.8 - 558.5) * var(--k)); }
+
+/* fold 7: the looping video, softened like "Fold 7 ref.png", wiping up over fold 6 (clip-path set in main.js) */
+.f7bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(calc(5 / 1728 * 100vw)) brightness(0.92);
+  transform: scale(1.03); /* hides the blur's soft edge */
+  clip-path: inset(100% 0 0 0);
+  visibility: hidden;
+  pointer-events: none;
+}
+/* fold 7 ("7.png"): one centred line */
+.ln--tab { top: calc(50% + (541.6 - 558.5) * var(--k)); }
+
+/* ---------------------------------------------------------------------------
+   Mobile (under 768px wide), after "dining mobile ref/" (390 x 844 screens):
+   headings 28px on 30px, body 16px on 20px at that size. Everything is in the
+   references' px (--u), scaled to fit the screen and measured from its middle,
+   so the layout keeps its proportions on any phone; the backgrounds still fill
+   the whole screen (the canvas layouts are centred the same way).
+   --------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  /* one reference px: the 390 x 844 layout scaled to fit the screen (width or height, whichever is tighter) */
+  :root { --u: min(calc(100vw / 390), calc(100vh / 844)); }
+  @supports (height: 100dvh) { :root { --u: min(calc(100vw / 390), calc(100dvh / 844)); } }
+  /* The copy after "Dining Folds bg/mob/" (390 x 844): each line placed and sized as in its
+     reference (the headings measured off it), body at 16 on 19.2; measured from the middle of
+     the screen, or its top or bottom edge for the lines near them. */
+  .ln--body { font-size: calc(16 * var(--u)); line-height: calc(19.2 * var(--u)); }
+  .ln--body br.d { display: none; }
+  .ln--body br.m { display: inline; } /* broken where the references break them */
+  /* landing ("FOLD1.png") */
+  .ln--la, .ln--lc { font-size: calc(19.44 * var(--u)); line-height: calc(24 * var(--u)); } /* 20% larger than the reference */
+  .copy--landing .sc { font-size: calc(31.2 * var(--u)); }
+  .ln--la { top: calc(50% - 24 * var(--u)); } /* the two lines (24 each) centred on the screen */
+  .ln--lc { top: 50%; }
+  /* dining pass ("FOLD2.png") */
+  .ln--pi { font-size: calc(16.1 * var(--u)); left: calc(50% + (122 - 195) * var(--u)); top: calc(50% + (371.3 - 422) * var(--u)); }
+  .ln--pd { font-size: calc(62.5 * var(--u)); left: calc(50% + (51.8 - 195) * var(--u)); top: calc(50% + (376.9 - 422) * var(--u)); }
+  .ln--pb { left: calc(50% - 110 * var(--u)); top: calc(100% - (844 - 721.8) * var(--u)); width: calc(220 * var(--u)); text-align: center; }
+  /* fold 3 ("FOLD3.png") */
+  .ln--bh { font-size: calc(28 * var(--u)); line-height: calc(32.3 * var(--u)); left: calc(50% + (33.5 - 195) * var(--u)); top: calc(83.3 * var(--u)); }
+  .copy--bill .sc { font-size: calc(43.5 * var(--u)); }
+  /* after "Fold 3/one bill ref.png": "PAYS FOR" stepped in, "Another" on a line of its own, further in */
+  .ln--bh br.m { display: inline; }
+  .ln--bh .bh2 { margin-left: calc(31 * var(--u)); position: relative; top: calc(-5 * var(--u)); } /* 5 closer to "One BILL" */
+  .ln--bh .bh3 { margin-left: calc(128.5 * var(--u)); position: relative; top: calc(-12.5 * var(--u)); }
+  .ln--bb { left: calc(50% + (219.8 - 195) * var(--u)); top: calc(100% - (844 - 654.3) * var(--u)); width: calc(140 * var(--u)); }
+  .ln--g1, .ln--g2, .ln--g3 { font-size: calc(28 * var(--u)); }
+  /* the copy on the wall above the frame, 40px from the left edge like the frame, "good news"
+     under "your bill", the body 30 below the heading. The frame (its gilded edge, not its shadow)
+     is 40px from either edge, its bottom edge 140px above the screen's (main.js), so its top is at 100% - 140px - its
+     height / 2; the block (cap
+     top of the heading to the body's last baseline, 173.6) sits with as much space above it as
+     between it and the frame: --g4 is the top of its capitals. */
+  .copy--g1 { --g4: calc((100% - 140px - (100vw - 80px) * 0.754 - 173.6 * var(--u)) / 2 + 20px); } /* + 20px: a little lower */ /* frame top = 100% - 140px - its height (0.754 of its width) */ /* 0.377: half the gilded frame's height over its width (800 / 1061 / 2) */
+  .ln--g1 { left: calc(40px + 0.56 * var(--u)); top: calc(var(--g4) - 3.4 * var(--u)); }
+  .ln--g2 { left: calc(40px + 26.5 * var(--u)); top: calc(var(--g4) + 23.6 * var(--u)); }
+  .ln--g3 { left: calc(40px - 0.84 * var(--u)); top: calc(var(--g4) + 50.6 * var(--u)); }
+  .ln--gb { left: 40px; top: calc(var(--g4) + 100.8 * var(--u)); }
+  /* the map ("FOLD5.png"): on the card, which sits on the bottom edge; the city on a line of its own */
+  .ln--fn { font-size: calc(48.8 * var(--u)); left: calc(50% + (30.1 - 195) * var(--u)); top: calc(100% - (844 - 714.9) * var(--u) - 20px); }
+  .ln--fr { font-size: calc(19.3 * var(--u)); line-height: calc(22.5 * var(--u)); left: calc(50% + (32.8 - 195) * var(--u)); top: calc(100% - (844 - 764) * var(--u) - 20px); }
+  .city { display: block; vertical-align: 0; margin-top: calc(-1.3 * var(--u)); }
+  /* the receipt ("FOLD6.2.png") */
+  .ln--sb { left: calc(50% - 115 * var(--u)); top: calc(100% - (844 - 672.6) * var(--u)); width: calc(230 * var(--u)); text-align: center; }
+  /* the last ("FOLD7.png"): two centred lines, "Yours." under "THE TABLE IS" */
+  .ln--tab { font-size: calc(22 * var(--u)); line-height: calc(22 * var(--u)); top: calc(50% + (386.8 - 422) * var(--u)); }
+  .ln--tab .sc { display: block; font-size: calc(35.7 * var(--u)); line-height: calc(29.5 * var(--u)); margin: calc(2.55 * var(--u)) 0 0; }
+  .f7bg { filter: blur(3px) brightness(0.92); }
+}
